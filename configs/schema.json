@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bebond AI Writer Agent Config",
+  "type": "object",
+  "required": ["agent_id", "agent_name", "agent_endpoint", "default_locale", "host_patterns", "scrape_selector", "insert_selector"],
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "description": "Unique agent identifier (e.g. sove-da)"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Human-readable agent name shown in picker"
+    },
+    "agent_endpoint": {
+      "type": "string",
+      "format": "uri",
+      "description": "Agent draft generation endpoint URL"
+    },
+    "default_locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[A-Z]{2}$",
+      "description": "Default locale for voice and drafting (e.g. nl-NL)"
+    },
+    "host_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Match patterns for hostnames this agent works on"
+    },
+    "scrape_selector": {
+      "type": "string",
+      "description": "CSS selector for page content to scrape as context"
+    },
+    "insert_selector": {
+      "type": "string",
+      "description": "CSS selector for the reply/input element to insert text into"
+    },
+    "branding": {
+      "type": "object",
+      "properties": {
+        "primary_color": { "type": "string" },
+        "icon_url": { "type": "string" }
+      }
+    }
+  }
+}

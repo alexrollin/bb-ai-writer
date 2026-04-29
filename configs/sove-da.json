@@ -1,0 +1,12 @@
+{
+  "agent_id": "sove-da",
+  "agent_name": "Sove Directory Agent",
+  "agent_endpoint": "https://sove-da.bebond.net/draft",
+  "default_locale": "nl-NL",
+  "host_patterns": [
+    "https://*.ayecode.io/*",
+    "https://*.freescout.net/*"
+  ],
+  "scrape_selector": ".conv-messages",
+  "insert_selector": ".reply-editor, #reply-content"
+}

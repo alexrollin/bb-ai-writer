@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bebond AI Writer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <div id="login-view" class="view" style="display:none;">
+      <div class="login-header">
+        <span class="logo">[bb]</span>
+        <span class="title">Bebond AI Writer</span>
+      </div>
+      <p class="login-hint">Connect your Bebond account to start drafting with AI agents.</p>
+      <button id="btn-connect" class="btn btn-primary">Connect Bebond</button>
+    </div>
+
+    <div id="main-view" class="view" style="display:none;">
+      <div class="org-bar">
+        <div class="org-info">
+          <span class="org-email" id="user-email"></span>
+          <span class="org-name" id="org-name"></span>
+        </div>
+        <button id="btn-switch-org" class="btn btn-small">Switch org →</button>
+      </div>
+
+      <div class="agent-bar">
+        <label for="agent-picker">Agent:</label>
+        <select id="agent-picker"></select>
+      </div>
+
+      <div class="actions">
+        <button id="btn-get-draft" class="btn btn-primary">Get Draft</button>
+        <button id="btn-edit-selection" class="btn">✏ Edit selection</button>
+        <button id="btn-voice" class="btn">🎤 Voice</button>
+      </div>
+
+      <div class="draft-area">
+        <textarea id="draft-text" placeholder="Draft text appears here, editable..."></textarea>
+      </div>
+
+      <div class="draft-actions">
+        <button id="btn-insert" class="btn btn-primary">Insert into page</button>
+        <button id="btn-copy" class="btn">Copy</button>
+        <button id="btn-discard" class="btn">Discard</button>
+      </div>
+
+      <p class="hint">Highlight any text → right-click → "Ask the agent"</p>
+    </div>
+
+    <div class="footer">
+      <button id="btn-settings" class="btn btn-icon" title="Settings">⚙</button>
+      <button id="btn-logout" class="btn btn-icon" title="Disconnect Bebond" style="display:none;">🔌</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

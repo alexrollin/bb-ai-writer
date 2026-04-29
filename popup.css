@@ -1,0 +1,180 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 400px;
+  min-height: 300px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.view {
+  padding: 14px;
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.logo {
+  background: #4a4aff;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.login-hint {
+  color: #888;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.org-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #16213e;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.org-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.org-email {
+  font-size: 11px;
+  color: #888;
+}
+
+.org-name {
+  font-weight: 600;
+  color: #4a4aff;
+}
+
+.agent-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.agent-bar label {
+  color: #888;
+}
+
+.agent-bar select {
+  flex: 1;
+  background: #0f3460;
+  color: #e0e0e0;
+  border: 1px solid #2a2a5a;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.draft-area textarea {
+  width: 100%;
+  min-height: 120px;
+  background: #0f3460;
+  border: 1px solid #2a2a5a;
+  border-radius: 6px;
+  color: #e0e0e0;
+  padding: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.draft-area textarea:focus {
+  outline: none;
+  border-color: #4a4aff;
+}
+
+.draft-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.hint {
+  font-size: 11px;
+  color: #555;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: 1px solid #4a4aff;
+  border-radius: 6px;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn:hover {
+  background: #4a4aff;
+  color: #fff;
+}
+
+.btn-primary {
+  background: #4a4aff;
+  color: #fff;
+  border-color: #4a4aff;
+}
+
+.btn-primary:hover {
+  background: #3a3aee;
+}
+
+.btn-small {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.btn-icon:hover {
+  background: #16213e;
+  border-radius: 4px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-top: 1px solid #2a2a5a;
+}
