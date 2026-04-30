@@ -1,115 +1,75 @@
-const OAUTH_CONFIG = {
-  client_id: 'bb-ai-writer',
-  authorize_url: 'https://account.bebond.net/oauth/authorize',
-  token_url: 'https://api.bebond.net/v1/oauth/token',
-  redirect_path: '/callback',
-  scopes: 'read_agents call_agents',
-};
+// Bebond AI Writer — auth via canonical OAuthRepl pattern.
+// Pattern: https://account.bebond.net/oauth/repl?app=ai-writer&redirect=<chrome-redirect-url>
+// On approve, OAuthRepl redirects to the extension's chromiumapp.org URL with
+// ?bb_key=…&org_id=…&app=… — we parse and store, no token-exchange step.
+
+const APP = 'ai-writer';
+const OAUTH_BASE = 'https://account.bebond.net/oauth/repl';
 
 function getRedirectUrl() {
-  return chrome.identity.getRedirectURL(OAUTH_CONFIG.redirect_path);
+  return chrome.identity.getRedirectURL('callback');
 }
 
 async function getStoredAuth() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['bb_key', 'org_id', 'org_name', 'expires_at'], (result) => {
-      resolve(result);
-    });
+    chrome.storage.local.get(['bb_key', 'org_id', 'app', 'expires_at'], resolve);
   });
 }
 
 async function storeAuth(data) {
   return new Promise((resolve) => {
-    chrome.storage.local.set({
-      bb_key: data.bb_key,
-      org_id: data.org_id,
-      org_name: data.org_name,
-      expires_at: data.expires_at,
-    }, resolve);
+    chrome.storage.local.set(data, resolve);
   });
 }
 
 async function clearAuth() {
   return new Promise((resolve) => {
-    chrome.storage.local.remove(['bb_key', 'org_id', 'org_name', 'expires_at'], resolve);
+    chrome.storage.local.remove(['bb_key', 'org_id', 'app', 'expires_at'], resolve);
   });
 }
 
 function isTokenValid(auth) {
   if (!auth.bb_key || !auth.org_id) return false;
+  if (!auth.bb_key.startsWith('bb_')) return false;
   if (auth.expires_at && Date.now() > auth.expires_at) return false;
   return true;
 }
 
 async function launchOAuthFlow() {
   const redirectUrl = getRedirectUrl();
-  const state = crypto.randomUUID();
-  const authUrl = `${OAUTH_CONFIG.authorize_url}?client_id=${OAUTH_CONFIG.client_id}&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=${encodeURIComponent(OAUTH_CONFIG.scopes)}&state=${state}`;
+  const authUrl = `${OAUTH_BASE}?app=${encodeURIComponent(APP)}&redirect=${encodeURIComponent(redirectUrl)}`;
 
-  return new Promise((resolve, reject) => {
+  const responseUrl = await new Promise((resolve, reject) => {
     chrome.identity.launchWebAuthFlow(
       { url: authUrl, interactive: true },
-      (responseUrl) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        if (!responseUrl) {
-          reject(new Error('No response URL returned'));
-          return;
-        }
-
-        const url = new URL(responseUrl);
-        const code = url.searchParams.get('code');
-        const returnedState = url.searchParams.get('state');
-        const orgId = url.searchParams.get('org_id');
-
-        if (returnedState !== state) {
-          reject(new Error('State mismatch — possible CSRF'));
-          return;
-        }
-        if (!code) {
-          const error = url.searchParams.get('error') || 'unknown';
-          reject(new Error(`OAuth error: ${error}`));
-          return;
-        }
-
-        exchangeCodeForToken(code, orgId)
-          .then(resolve)
-          .catch(reject);
-      }
+      (rurl) => {
+        if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
+        if (!rurl) return reject(new Error('No response URL returned'));
+        resolve(rurl);
+      },
     );
   });
-}
 
-async function exchangeCodeForToken(code, orgId) {
-  const resp = await fetch(OAUTH_CONFIG.token_url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      code,
-      client_id: OAUTH_CONFIG.client_id,
-    }),
-  });
+  const url = new URL(responseUrl);
+  const bbKey = url.searchParams.get('bb_key');
+  const orgId = url.searchParams.get('org_id');
+  const errorReason = url.searchParams.get('error');
+  if (errorReason) throw new Error(`Login denied: ${errorReason}`);
+  if (!bbKey || !bbKey.startsWith('bb_')) throw new Error('No bb_key in callback');
+  if (!orgId) throw new Error('No org_id in callback');
 
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Token exchange failed (${resp.status}): ${text}`);
-  }
-
-  const data = await resp.json();
-  await storeAuth({
-    bb_key: data.bb_key,
-    org_id: data.org_id || orgId,
-    org_name: data.org_name,
-    expires_at: data.expires_at ? new Date(data.expires_at).getTime() : Date.now() + 3600000,
-  });
-
+  const data = {
+    bb_key: bbKey,
+    org_id: orgId,
+    app: APP,
+    expires_at: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days; rotate via login again
+  };
+  await storeAuth(data);
   return data;
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'LOGIN') {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === 'LOGIN' || message.type === 'SWITCH_ORG') {
     launchOAuthFlow()
       .then((data) => sendResponse({ success: true, data }))
       .catch((err) => sendResponse({ success: false, error: err.message }));
@@ -122,14 +82,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'GET_AUTH') {
-    getStoredAuth().then((auth) => sendResponse({ auth }));
-    return true;
-  }
-
-  if (message.type === 'SWITCH_ORG') {
-    launchOAuthFlow()
-      .then((data) => sendResponse({ success: true, data }))
-      .catch((err) => sendResponse({ success: false, error: err.message }));
+    getStoredAuth().then((auth) => sendResponse({ auth, valid: isTokenValid(auth) }));
     return true;
   }
 });
